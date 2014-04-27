@@ -52,7 +52,7 @@ module cpu(
 		output wire [3:0]	ex_aluctl,
 
 		input wire mem_ready,
-		inout wire [31:0]	mem_memdata,
+		inout wire  [31:0]	mem_memdata,
 		output wire [31:0] 	mem_addr,
 		output wire			mem_memread,
 		output wire			mem_memwrite,
@@ -301,7 +301,10 @@ module cpu(
 	//dm dm1(.clk(clk), .addr(alurslt_s4[8:2]), .rd(memread_s4), .wr(memwrite_s4),
 	//		.wdata(data2_s4), .rdata(rdata));
 
-	assign mem_addr = alurslt_s4[8:2];
+	//align addres by 4
+	assign mem_addr[31:2] = alurslt_s4[31:2];
+	assign mem_addr[1:0] = 2'b00;
+
 	assign mem_memread = memread_s4;
 	assign mem_memwrite = memwrite_s4;
 	assign mem_memdata = mem_memwrite ? data2_s4 : 32'hz;

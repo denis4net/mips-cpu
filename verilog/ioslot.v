@@ -21,6 +21,7 @@ module ioslot(
 
     wire end_addr;
     wire is_current_device;
+    wire [ADDR_WIDTH-1:0] t_io_addr;
 
     assign end_addr = (ADDR_START + ADDR_SPACE_SIZE);
     assign is_current_device = (addr >= ADDR_START & addr < end_addr);
@@ -28,7 +29,8 @@ module ioslot(
     assign io_data = (read) ? {(PERIPH_DATA_WIDTH){1'bz}} : data;
     assign data = (read) ? io_data : {(DATA_WIDTH){1'bz}};
     //assgin  address busses
-    assign io_addr = (io_read | io_write) ? addr - ADDR_START : {(PERIPH_DATA_WIDTH){1'bz}};
+    assign t_io_addr = addr - ADDR_START;
+    assign io_addr = (io_read | io_write) ? t_io_addr[7:2] : {(PERIPH_DATA_WIDTH){1'bz}};
     //assign control wires
     assign io_read  = (read &  is_current_device);
     assign io_write = (write & is_current_device);

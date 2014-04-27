@@ -5,7 +5,7 @@
 `include "constants.v"
 
 module soc_tb();
-
+    reg [8:0] i;
     reg clk;
     wire [8:0] leds;
     reg [7:0] buttons;
@@ -20,11 +20,11 @@ module soc_tb();
     wire [31:0]  ex_alub;
     wire [3:0]   ex_aluctl;
 
-    wire         mem_memready;
-    wire [31:0]  mem_memdata;
-    wire [31:0]  mem_memaddr;
-    wire         mem_memread;
-    wire         mem_memwrite;
+    wire         cpu_ready;
+    wire [31:0]  cpu_data;
+    wire [31:0]  cpu_addr;
+    wire         cpu_read;
+    wire         cpu_write;
 
     wire [31:0]  wb_regdata;
     wire         wb_regwrite;
@@ -32,8 +32,8 @@ module soc_tb();
     soc soc1(.g_clk(clk), .g_leds(leds), .g_buttons(buttons),
             .if_pc(if_pc), .if_instr(if_instr), .id_regrs(id_regrs), .id_regrt(id_regrt),
             .ex_alua(ex_alua), .ex_alub(ex_alub), .ex_aluctl(ex_aluctl),
-            .mem_memwrite(mem_memwrite), .mem_memread(mem_memread), .mem_memaddr(mem_memaddr),
-            .mem_memdata(mem_memdata), .mem_memready(mem_memready),
+            .cpu_write(cpu_write), .cpu_read(cpu_read), .cpu_addr(cpu_addr),
+            .cpu_data(cpu_data), .cpu_ready(cpu_ready),
             .wb_regdata(wb_regdata), .wb_regwrite(wb_regwrite)
         );
 
@@ -46,19 +46,49 @@ module soc_tb();
         $dumpfile("soc_tb.vcd");
         $dumpvars(0, soc1);
 
-        $display("%8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s",
-            "leds",
+        $display("%8s %8s| %8s %8s| %8s %8s %8s| %8s %8s %8s %8s %8s| %8s %8s| %4s",
             "if_pc", "if_instr",
-            "id_regrs", "id_regrs", "ex_alua", "ex_alub", "ex_aluctl",
-            "mem_addr", "mem_memdata", "mem_memread", "mem_memwrite", "mem_memready");
+            "id_regrs", "id_regrt",
+            "ex_alua", "ex_alub", "aluctl",
+            "cpu_addr", "cpu_data", "cpu_read", "cpu_write", "cpu_ready",
+            "wb_regd", "wb_regwr",
+            "leds");
 
-        $monitor("%8X %8X %8X %8X %8X %8X %8X %8X %8X %8X %8X %8X %8X",
-            leds,
+        $monitor("%8X %8X| %8X %8X| %8X %8X %8X| %8X %8X %8X %8X %8X| %8x %8x| %4x",
             if_pc, if_instr,
-            id_regrs, id_regrs, ex_alua, ex_alub, ex_aluctl,
-            mem_memaddr, mem_memdata, mem_memread, mem_memwrite, mem_memready);
+            id_regrs, id_regrt,
+            ex_alua, ex_alub, ex_aluctl,
+            cpu_addr, cpu_data, cpu_read, cpu_write, cpu_ready,
+            wb_regdata, wb_regwrite,
+            leds);
 
-        #200 $finish;
+        #100 $display("rg| value");
+
+        for (i = 0; i < 32; i = i + 1)
+        begin
+            $display("%2d| %8x", i, soc1.cpu1.regm1.mem[i]);
+        end
+
+        //dumping Data memory
+        $display("Data memory");
+        $display("    | %8x %8x %8x %8x", 0, 4, 8, 12);
+        for(i = 0; i < 48; i = i + 4)
+        begin
+            $display("%4x| %8x %8x %8x %8x", i*4, soc1.dm1.mem[i],
+                soc1.dm1.mem[i+1], soc1.dm1.mem[i+2], soc1.dm1.mem[i+3]);
+        end
+
+        //dumping IO device configuration registers
+        $display("IO Device");
+        $display("    | %8x %8x %8x %8x", 0, 4, 8, 12);
+        for(i = 0; i < 8; i = i + 4)
+        begin
+            $display("%4x| %8x %8x %8x %8x", i*4, soc1.iobus1.periph_leds1.registers[i],
+                soc1.iobus1.periph_leds1.registers[i+1], soc1.iobus1.periph_leds1.registers[i+2],
+                soc1.iobus1.periph_leds1.registers[i+3]);
+        end
+
+        $finish;
     end
 
     always begin

@@ -5,7 +5,7 @@ OBJ := soc_tb
 all: $(OBJ) test
 
 $(OBJ): $(OBJ).v
-	iverilog -gsystem-verilog $< -o $@ -I.. -I../..
+	iverilog -g2005 $< -o $@ -I.. -I../..
 
 test: $(OBJ)
 	./$(OBJ)

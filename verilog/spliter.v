@@ -30,7 +30,7 @@ module spliter(input wire [ADDR_WIDTH-1:0] addr, inout wire [DATA_WIDTH-1:0] dat
 
 		assign sel = ( addr > `IO_ADDR_DIFF ) ? 1'b1 : 1'b0; // 0 - memory controller, 1 - io controller
 
-		assign io_data = (write & sel) ? data : 32'bz;
+		assign io_data = (write & sel) ? data : {(DATA_WIDTH){1'bz}};
 		assign io_addr = (addr - `IO_ADDR_DIFF);
 		assign io_read = (read & sel);
 		assign io_write = (write & sel);
@@ -39,12 +39,8 @@ module spliter(input wire [ADDR_WIDTH-1:0] addr, inout wire [DATA_WIDTH-1:0] dat
 		assign mem_addr = addr;
 		assign mem_read = (read & ~sel);
 		assign mem_write = (write & ~sel);
-		assign data = (write) ? {(DATA_WIDTH){1'bz}} : data_reg;
+		assign data = (write | ~read) ? {(DATA_WIDTH){1'bz}} : ((sel) ? io_data : mem_data);
 		assign ready = (sel) ? io_ready : mem_ready;
-
-		always @(data, sel) begin
-			data_reg = (sel) ? io_data : mem_data;
-		end
 endmodule
 
 `endif

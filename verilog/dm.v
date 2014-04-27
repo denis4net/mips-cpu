@@ -10,7 +10,7 @@
  *
  * Any time the write signal (wr) is high the data on 'wdata' will
  * be stored at the given address (addr).
- * 
+ *
  * If a simultaneous read/write is performed the data written
  * can be immediately read out.
  */
@@ -22,10 +22,13 @@ module dm(
 		input wire			clk,
 		input wire	[31:0]	addr,
 		input wire			rd, wr,
-		inout wire [31:0] data, 
+		inout wire [31:0] data,
 		output reg ready);
 
 	reg [31:0] mem [0:127];  // 32-bit memory with 128 entries
+
+	initial
+		$readmemh("./dm_data.hex", mem, 0, 127);
 
 	always @(posedge clk) begin
 		if (wr) begin

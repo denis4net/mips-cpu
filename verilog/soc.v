@@ -6,13 +6,34 @@
 `include "dm.v"
 `include "ioctrl.v"
 `include "iobus.v"
-
 `include "constants.v"
 
 /*
  * altera cyclone III fpga platform specific code
  */
-module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_buttons);
+module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_buttons
+`ifdef DEBUG //in case, if perfoming simulation on computer
+		,
+		output wire [31:0]	if_pc,		// program counter (PC)
+		output wire [31:0]	if_instr,	// instruction read from memory (IM)
+
+		output wire [31:0]	id_regrs,
+		output wire [31:0]	id_regrt,
+
+		output wire [31:0]	ex_alua,
+		output wire [31:0]	ex_alub,
+		output wire [3:0]	ex_aluctl,
+
+		output wire 		cpu_ready,
+		output wire [31:0]	cpu_data,
+		output wire [31:0] 	cpu_addr,
+		output wire			cpu_read,
+		output wire			cpu_write,
+
+		output wire [31:0]	wb_regdata,
+		output wire 		wb_regwrite
+`endif
+	);
 
 	parameter CPU_ADDR_WIDTH = `CPU_ADDR_WIDTH;
 	parameter CPU_DATA_WIDTH = `CPU_DATA_WIDTH;
@@ -27,8 +48,30 @@ module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_button
 	wire [CPU_ADDR_WIDTH-1:0] addr;
 	wire read, write, ready;
 
+	`ifdef DEBUG
 	cpu cpu1(.clk(g_clk), .mem_memdata(data), .mem_addr(addr),
-			.mem_memread(read), .mem_memwrite(write), .mem_ready(ready));
+			.mem_memread(read), .mem_memwrite(write), .mem_ready(ready),
+			.if_pc(if_pc), .if_instr(if_instr),
+			.id_regrs(id_regrs), .id_regrt(id_regrt),
+			.ex_alua(ex_alua), .ex_alub(ex_alub), .ex_aluctl(ex_aluctl),
+			.wb_regwrite(wb_regwrite), .wb_regdata(wb_regdata)
+			);
+	`else
+	wire cpu_clk;
+	clkdiv div1(.in(g_clk), .out(cpu_clk));
+	cpu cpu1(.clk(cpu_clk), .mem_memdata(data), .mem_addr(addr),
+			.mem_memread(read), .mem_memwrite(write), .mem_ready(ready),
+			);
+	`endif
+
+	`ifdef DEBUG
+		//connect debug wires
+		assign cpu_write = write;
+		assign cpu_read = read;
+		assign cpu_addr = addr;
+		assign cpu_data = data;
+		assign cpu_ready = ready;
+	`endif
 
 	//attaching address space splitter
 	wire [MEM_DATA_WIDTH-1:0] mem_data;
