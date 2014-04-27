@@ -1,11 +1,1 @@
-OBJ := leds_tb
-
-.PHONY: $(OBJ)
-
-all: $(OBJ) test
-
-$(OBJ): $(OBJ).v
-	iverilog -g2005 $< -o $@ -I.. -I../..
-
-test: $(OBJ)
-	./$(OBJ)
+../Makefile_soc_tb
