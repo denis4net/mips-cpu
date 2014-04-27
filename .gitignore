@@ -3,3 +3,7 @@
 log.txt
 *.htm
 *.log
+*.hex
+*.out
+*_tb
+.SyncIgnore
