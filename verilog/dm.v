@@ -20,21 +20,26 @@
 
 module dm(
 		input wire			clk,
-		input wire	[6:0]	addr,
+		input wire	[31:0]	addr,
 		input wire			rd, wr,
-		input wire 	[31:0]	wdata,
-		output wire	[31:0]	rdata);
+		inout wire [31:0] data, 
+		output reg ready);
 
 	reg [31:0] mem [0:127];  // 32-bit memory with 128 entries
 
 	always @(posedge clk) begin
 		if (wr) begin
-			mem[addr] <= wdata;
+			mem[addr[8:2]] <= data;
+			ready <= 1;
 		end
+		else if (rd)
+			ready <= 1;
+		else
+			ready <= 0;
 	end
 
-	assign rdata = wr ? wdata : mem[addr][31:0];
 	// During a write, avoid the one cycle delay by reading from 'wdata'
+	assign data = wr ? 32'bz : mem[addr[8:2]][31:0];
 
 endmodule
 

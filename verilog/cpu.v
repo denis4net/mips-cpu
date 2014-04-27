@@ -15,13 +15,16 @@
  *
  * wire data_s2;
  * wire data_s3;
- *	
+ *
  * If the stage number is omitted it is assumed to
  * be at the stage at which the variable is first
  * established.
  *
  * This file is best viewed in Vim with foldmethod=marker (zo, zc)
  */
+
+`ifndef _cpu
+`define _cpu
 
 `include "reggy.v"
 `include "sreggy.v"
@@ -33,11 +36,11 @@
 `include "alu.v"
 `include "alu_control.v"
 `include "dm.v"
+`include "constants.v"
 
 module cpu(
 		input wire clk,
 
-		// diagnostic outputs
 		output wire [31:0]	if_pc,		// program counter (PC)
 		output wire [31:0]	if_instr,	// instruction read from memory (IM)
 
@@ -48,15 +51,17 @@ module cpu(
 		output wire [31:0]	ex_alub,
 		output wire [3:0]	ex_aluctl,
 
-		output wire [31:0]	mem_memdata,
+		input wire mem_ready,
+		inout wire [31:0]	mem_memdata,
+		output wire [31:0] 	mem_addr,
 		output wire			mem_memread,
 		output wire			mem_memwrite,
 
 		output wire [31:0]	wb_regdata,
 		output wire 		wb_regwrite);
 
-	parameter NMEM = 20;  // number in instruction memory
-	parameter IM_DATA = "im_data.txt";
+	parameter NMEM = `NMEM;  // number in instruction memory
+	parameter IM_DATA = `IM_DATA;
 
 	/*
 	 * Refer to the diagram of the 5 stage pipeline in order
@@ -75,10 +80,6 @@ module cpu(
 	assign ex_alub = alusrc_data2;
 	assign ex_aluctl = aluctl;
 
-	assign mem_memdata = data2_s4;
-	assign mem_memread = memread_s4;
-	assign mem_memwrite = memwrite_s4;
-
 	assign wb_regdata = wrdata_s5;
 	assign wb_regwrite = regwrite_s5;
 
@@ -95,7 +96,7 @@ module cpu(
 	assign pc4 = pc + 4;
 
 	always @(posedge clk) begin
-		if (stall_s1_s2) 
+		if (stall_s1_s2)
 			pc <= pc;
 		else if (pcsrc == 1'b1)
 			pc <= baddr_s2;
@@ -297,8 +298,15 @@ module cpu(
 
 	// data memory
 	wire [31:0] rdata;
-	dm dm1(.clk(clk), .addr(alurslt_s4[8:2]), .rd(memread_s4), .wr(memwrite_s4),
-			.wdata(data2_s4), .rdata(rdata));
+	//dm dm1(.clk(clk), .addr(alurslt_s4[8:2]), .rd(memread_s4), .wr(memwrite_s4),
+	//		.wdata(data2_s4), .rdata(rdata));
+
+	assign mem_addr = alurslt_s4[8:2];
+	assign mem_memread = memread_s4;
+	assign mem_memwrite = memwrite_s4;
+	assign mem_memdata = mem_memwrite ? data2_s4 : 32'hz;
+	assign rdata = mem_memdata;
+
 	// pass read data to stage 5
 	wire [31:0] rdata_s5;
 	reggy #(.N(32)) reg_rdata_s4(.clk(clk),
@@ -317,7 +325,7 @@ module cpu(
 				.in(wrreg_s4),
 				.out(wrreg_s5));
 	// }}}
-			
+
 	// {{{ stage 5, WB (write back)
 
 	wire [31:0]	wrdata_s5;
@@ -358,7 +366,7 @@ module cpu(
 
 	/* If an operation in stage 4 (MEM) loads from memory (e.g. lw)
 	 * and the operation in stage 3 (EX) depends on this value,
-	 * a stall must be performed.  The memory read cannot 
+	 * a stall must be performed.  The memory read cannot
 	 * be forwarded because memory access is too slow.  It can
 	 * be forwarded from stage 5 (WB) after a stall.
 	 *
@@ -381,3 +389,4 @@ module cpu(
 	// }}}
 
 endmodule
+`endif

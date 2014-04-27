@@ -1,5 +1,7 @@
 
-OBJS = pc_tb dm_tb im_slow_tb im_cached_tb
+#OBJS = pc_tb dm_tb im_slow_tb im_cached_tb
+
+OBJS := clkdiv_tb
 
 all: $(OBJS)
 
@@ -22,7 +24,7 @@ im_cached_tb: im_cached_tb.v .FORCE
 im_cached_tb.vcd: im_cached_tb .FORCE
 	./$<
 
-test:
+gtest:
 	cd 01-no_hazard; make test
 	cd 02-branch; make test
 	cd 02-operators; make test
