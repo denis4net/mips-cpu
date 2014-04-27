@@ -69,10 +69,13 @@ be reviewed more closely (in a simulator) to verify that it
 is correct.  And then a new .check can be generated from the
 output.
 
-# AUTHOR
+# AUTHORS
 
 Jeremiah Mahler <jmmahler@gmail.com><br>
 <https://plus.google.com/101159326398579740638/about>
+
+Denis Vashchuk <denis.vashchuk@gmail.com><br>
+<https://www.linkedin.com/pub/denis-vashchuk/6b/356/636/>
 
 # COPYRIGHT
 
