@@ -76,7 +76,7 @@ module cpu(
 	assign id_regrs = data1;  // value read from $rs
 	assign id_regrt = data2;  // value read from $rt
 
-	assign ex_alua = data1_s3;
+	assign ex_alua = fw_data1_s3;
 	assign ex_alub = alusrc_data2;
 	assign ex_aluctl = aluctl;
 
@@ -183,12 +183,13 @@ module cpu(
 	wire [1:0]	aluop;
 	wire		regwrite;
 	wire		alusrc;
+	wire 		doshift;
 	//
 	control ctl1(.opcode(opcode), .regdst(regdst),
 				.branch(branch), .memread(memread),
 				.memtoreg(memtoreg), .aluop(aluop),
 				.memwrite(memwrite), .alusrc(alusrc),
-				.regwrite(regwrite));
+				.regwrite(regwrite), .doshift(doshift));
 
 	// branch calculation
 	reg pcsrc;
@@ -212,19 +213,23 @@ module cpu(
 
 	// transfer the control signals to stage 3
 	wire		regdst_s3;
+
 	wire		memread_s3;
 	wire		memwrite_s3;
 	wire		memtoreg_s3;
 	wire [1:0]	aluop_s3;
 	wire		regwrite_s3;
 	wire		alusrc_s3;
+	wire [4:0]  shamt_s3; 	//shift immediate value in R-type command
+	wire  	    doshift_s3;
+
 	// A bubble is inserted by setting all the control signals
 	// to zero (stall_s1_s2).
-	zreggy #(.N(8)) reg_s2_control(.clk(clk), .zero(stall_s1_s2),
+	zreggy #(.N(14)) reg_s2_control(.clk(clk), .zero(stall_s1_s2),
 			.in({regdst, memread, memwrite,
-					memtoreg, aluop, regwrite, alusrc}),
+					memtoreg, aluop, regwrite, alusrc, shamt, doshift}),
 			.out({regdst_s3, memread_s3, memwrite_s3,
-					memtoreg_s3, aluop_s3, regwrite_s3, alusrc_s3}));
+					memtoreg_s3, aluop_s3, regwrite_s3, alusrc_s3, shamt_s3, doshift_s3}));
 	// }}}
 
 	// {{{ stage 3, EX (execute)
@@ -246,7 +251,7 @@ module cpu(
 	assign funct = seimm_s3[5:0];
 	// select ALU data2 source
 	wire [31:0] alusrc_data2;
-	assign alusrc_data2 = (alusrc_s3) ? seimm_s3 : fw_data2_s3;
+	assign alusrc_data2 = (alusrc_s3) ? seimm_s3 : ((doshift_s3) ? fw_data2_s3 << shamt_s3 : fw_data2_s3);
 	// ALU control
 	wire [3:0] aluctl;
 	alu_control alu_ctl1(.funct(funct), .aluop(aluop_s3), .aluctl(aluctl));
@@ -259,6 +264,7 @@ module cpu(
 			2'd2: fw_data1_s3 = wrdata_s5;
 		 default: fw_data1_s3 = data1_s3;
 	endcase
+
 	alu alu1(.ctl(aluctl), .a(fw_data1_s3), .b(alusrc_data2),
 				.out(alurslt));
 	// pass ALU result and zero to stage 4

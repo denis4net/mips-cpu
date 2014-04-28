@@ -1,11 +1,26 @@
 OBJ := soc_tb
+IM_DATA := "im_data.hex"
 
-.PHONY: $(OBJ)
+AS := mipsel-linux-gnu-as
+OBJCOPY := mipsel-linux-gnu-objcopy
+
+.PHONY: $(OBJ) $(IM_DATA)
 
 all: $(OBJ) test
 
-$(OBJ): $(OBJ).v
+$(OBJ): $(OBJ).v code
 	iverilog -g2005 $< -o $@ -I.. -I../..
+
+code:
+	$(AS) im.as -o im.elf
+	$(OBJCOPY) -j .text -O verilog im.elf im.vh
+	../../utilits/mem_converter.py im.vh im_data.hex
+	rm -rf im.elf
+	rm -rf im.vh
+	
+clean:
+	rm -rf $(OBJ)
+	rm -rf im_data.hex
 
 test: $(OBJ)
 	./$(OBJ)

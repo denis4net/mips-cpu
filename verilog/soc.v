@@ -7,7 +7,7 @@
 `include "ioctrl.v"
 `include "iobus.v"
 `include "constants.v"
-
+`include "clkdiv.v"
 /*
  * altera cyclone III fpga platform specific code
  */
@@ -47,19 +47,22 @@ module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_button
 	wire [CPU_DATA_WIDTH-1:0] data;
 	wire [CPU_ADDR_WIDTH-1:0] addr;
 	wire read, write, ready;
+	wire clk;
 
 	`ifdef DEBUG
-	cpu cpu1(.clk(g_clk), .mem_memdata(data), .mem_addr(addr),
+	assign clk = g_clk;
+
+	cpu cpu1(.clk(clk), .mem_memdata(data), .mem_addr(addr),
 			.mem_memread(read), .mem_memwrite(write), .mem_ready(ready),
 			.if_pc(if_pc), .if_instr(if_instr),
 			.id_regrs(id_regrs), .id_regrt(id_regrt),
 			.ex_alua(ex_alua), .ex_alub(ex_alub), .ex_aluctl(ex_aluctl),
 			.wb_regwrite(wb_regwrite), .wb_regdata(wb_regdata)
 			);
+
 	`else
-	wire cpu_clk;
-	clkdiv div1(.in(g_clk), .out(cpu_clk));
-	cpu cpu1(.clk(cpu_clk), .mem_memdata(data), .mem_addr(addr),
+	clkdiv div1(.in(g_clk), .out(clk));
+	cpu cpu1(.clk(clk), .mem_memdata(data), .mem_addr(addr),
 			.mem_memread(read), .mem_memwrite(write), .mem_ready(ready),
 			);
 	`endif
@@ -109,7 +112,7 @@ module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_button
 		.io_addr(iobus_addr), .io_data(iobus_data), .io_read(iobus_read), .io_write(iobus_write), .io_ready(iobus_ready)
 		);
 
-	iobus iobus1(.clk(g_clk), .addr(iobus_addr), .data(iobus_data), .read(iobus_read), .write(iobus_write),
+	iobus iobus1(.clk(clk), .addr(iobus_addr), .data(iobus_data), .read(iobus_read), .write(iobus_write),
 		.ready(iobus_ready), .leds(g_leds), .buttons(g_buttons));
 
 endmodule

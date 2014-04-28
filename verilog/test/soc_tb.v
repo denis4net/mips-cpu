@@ -60,11 +60,11 @@ module soc_tb();
             ex_alua, ex_alub, ex_aluctl,
             cpu_addr, cpu_data, cpu_read, cpu_write, cpu_ready,
             wb_regdata, wb_regwrite,
-            leds);
+            leds[6:0]);
 
-        #100 $display("rg| value");
+        #200 $display("rg| value");
 
-        for (i = 0; i < 32; i = i + 1)
+        for (i = 1; i < 32; i = i + 1)
         begin
             $display("%2d| %8x", i, soc1.cpu1.regm1.mem[i]);
         end

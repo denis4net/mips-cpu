@@ -23,7 +23,7 @@ module iobus(
     wire [PERIPH_DATA_WIDTH-1:0] leds_data;
     wire leds_ready, leds_write, leds_read;
 
-    ioslot leds_lslot(.data(data), .addr(addr), .read(read), .write(write), .ready(ready),
+    ioslot #(.ADDR_START(8'h80)) leds_lslot(.data(data), .addr(addr), .read(read), .write(write), .ready(ready),
         .io_data(leds_data), .io_addr(leds_addr), .io_ready(leds_ready),
         .io_write(leds_write), .io_read(leds_read));
 

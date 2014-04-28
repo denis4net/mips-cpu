@@ -15,15 +15,16 @@ module ioslot(
     parameter DATA_WIDTH = `IO_DATA_WIDTH;
 
     parameter ADDR_SPACE_SIZE = `PERIPH_REGISTERS_COUNT;
-    parameter ADDR_START = 32'b0;  //must be specified at module instatiate
+    parameter ADDR_START = 32'h80;  //must be specified at module instatiate
     parameter PERIPH_DATA_WIDTH = `PERIPH_DATA_WIDTH;
     parameter PERIPH_ADDR_WIDTH = `PERIPH_ADDR_WIDTH; //ln(ADDR_SPACE_SIZE)
 
-    wire end_addr;
+    wire [31:0] end_addr;
     wire is_current_device;
     wire [ADDR_WIDTH-1:0] t_io_addr;
 
-    assign end_addr = (ADDR_START + ADDR_SPACE_SIZE);
+    assign end_addr = (ADDR_START + (32'h4 * ADDR_SPACE_SIZE));
+
     assign is_current_device = (addr >= ADDR_START & addr < end_addr);
     //assign data buses
     assign io_data = (read) ? {(PERIPH_DATA_WIDTH){1'bz}} : data;

@@ -33,13 +33,13 @@ module alu(
 
 	always @(*) begin
 		case (ctl)
-			4'b0010: out <= add_ab;				// a + b
-			4'b0000: out <= a & b;				// and
-			4'b1100: out <= ~(a | b);			// nor
-			4'b0001: out <= a | b;				// or
-			4'b0111: out <= {{31{1'b0}}, slt};	// set if less than
-			4'b0110: out <= sub_ab;				// a - b
-			4'b1101: out <= a ^ b;				// xor
+			4'h2: out <= add_ab;			// a + b
+			4'h0: out <= a & b;				// and
+			4'hc: out <= ~(a | b);			// nor
+			4'h1: out <= a | b;				// or
+			4'h7: out <= {{31{1'b0}}, slt};	// set if less than
+			4'h6: out <= sub_ab;			// a - b
+			4'hb: out <= a ^ b;				// xor
 			default: out <= 0;
 		endcase
 	end

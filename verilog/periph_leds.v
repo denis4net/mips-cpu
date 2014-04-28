@@ -2,7 +2,6 @@
 `define _periph_leds
 
 `include "constants.v"
-`include "clkdiv.v"
 
 module periph_leds (
         input clk,
@@ -32,10 +31,6 @@ module periph_leds (
     reg [PERIPH_ADDR_SPACE_SIZE-1:0] registers[DATA_WIDTH-1:0];
     reg [DATA_WIDTH-1:0] data_r;
 
-    wire internal_clk;
-
-    clkdiv clkdiv1(.in(clk), .out(internal_clk));
-
     initial begin
         registers[0] = {(DATA_WIDTH){1'h1}};
         registers[1] = {(DATA_WIDTH){1'h1}};
@@ -43,14 +38,13 @@ module periph_leds (
         registers[3] = {(DATA_WIDTH){1'h1}};
     end
 
-    assign ready = write | ready;
-    assign data = write ? {(DATA_WIDTH){1'bz}} : data_r;
-    assign out[7:0] = ~( registers[3][DATA_WIDTH-1] ? registers[3][7:0] : 7'h0);
-    assign out[8] = internal_clk;
+    assign ready = write | read;
+    assign data = write | ~read ? {(DATA_WIDTH){1'bz}} : data_r;
+    assign out[7:0] = ( registers[3][DATA_WIDTH-1] ? registers[3][7:0] : 7'h0);
+    assign out[8] = clk;
 
-    always @(write, read, internal_clk) begin
+    always @(*)
         registers[addr] = write ? data : registers[addr];
-    end
 
 
 endmodule

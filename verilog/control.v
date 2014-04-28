@@ -5,7 +5,7 @@ module control(
 		input  wire	[5:0]	opcode,
 		output wire 		regdst, branch, memread, memtoreg,
 		output wire [1:0]	aluop,
-		output wire			memwrite, alusrc, regwrite);
+		output wire			memwrite, alusrc, regwrite, doshift);
 
 	wire 		and1, and2, and3, and4, and5;
 	wire [5:0] 	oc;
@@ -34,6 +34,8 @@ module control(
 	assign alusrc = and1 | and2 | and5;
 
 	assign regwrite = ~(and3 | and5);
+
+	assign doshift = (oc == 6'h0); //if command is R-type command - do shift for operand RS
 endmodule
 
 `endif
