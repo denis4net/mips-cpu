@@ -8,10 +8,12 @@
 `include "iobus.v"
 `include "constants.v"
 `include "clkdiv.v"
+
 /*
  * altera cyclone III fpga platform specific code
  */
-module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_buttons
+module soc(input wire g_clk, output wire [8:0] g_leds,
+	output wire[11:0] g_display, input wire [7:0] g_buttons
 `ifdef DEBUG //in case, if perfoming simulation on computer
 		,
 		output wire [31:0]	if_pc,		// program counter (PC)
@@ -61,7 +63,7 @@ module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_button
 			);
 
 	`else
-	clkdiv div1(.in(g_clk), .out(clk));
+	clkdiv #(.CLK_DIVIDER_VALUE(26'd5000000)) div1(.in(g_clk), .out(clk));
 	cpu cpu1(.clk(clk), .mem_memdata(data), .mem_addr(addr),
 			.mem_memread(read), .mem_memwrite(write), .mem_ready(ready),
 			);
@@ -106,14 +108,25 @@ module soc(input wire g_clk, output wire [8:0] g_leds, input wire [7:0] g_button
 	wire [IO_ADDR_WIDTH-1:0] iobus_data;
 	wire iobus_read, iobus_write, iobus_ready;
 	wire iobus_clk;
-	assign iobus_clk = g_clk;
-
 	ioctrl ioctrl1(.addr(io_addr), .data(io_data), .read(io_read), .write(io_write), .ready(io_ready),
 		.io_addr(iobus_addr), .io_data(iobus_data), .io_read(iobus_read), .io_write(iobus_write), .io_ready(iobus_ready)
 		);
 
-	iobus iobus1(.clk(clk), .addr(iobus_addr), .data(iobus_data), .read(iobus_read), .write(iobus_write),
-		.ready(iobus_ready), .leds(g_leds), .buttons(g_buttons));
+	clkdiv #(.CLK_DIVIDER_VALUE(26'd125000)) div2(.in(g_clk), .out(iobus_clk));
+
+	iobus iobus1(.clk(iobus_clk), .addr(iobus_addr), .data(iobus_data), .read(iobus_read), .write(iobus_write),
+		.ready(iobus_ready),
+		`ifdef LEDS
+			.leds(g_leds),
+		`endif
+		`ifdef DISPLAY
+			.display(g_display)
+		`endif
+		`ifdef BUTTONS
+		 , .buttons(g_buttons)
+		`endif
+		);
+	assign g_leds[8] = clk;
 
 endmodule
 

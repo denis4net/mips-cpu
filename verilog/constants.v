@@ -16,9 +16,11 @@
 `define PERIPH_REGISTERS_COUNT 32 //count of peripheral registers on peripheral device
 
 `define CLK_DIVIDER_WIDTH 26
-`define CLK_DIVIDER_VALUE 26'd5000000
+`define CLK_DIVIDER_VALUE 26'd30000000
 
 `define NMEM 128 //instruction memory in 32bit words
 `define IM_DATA "im_data.hex" //path to instruction memory init file
+
+`define DISPLAY
 
 `endif

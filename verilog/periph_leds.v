@@ -39,7 +39,7 @@ module periph_leds (
     end
 
     assign ready = write | read;
-    assign data = write | ~read ? {(DATA_WIDTH){1'bz}} : data_r;
+    assign data = ( write | ~read ) ? {(DATA_WIDTH){1'bz}} : data_r;
     assign out[7:0] = ( registers[3][DATA_WIDTH-1] ? registers[3][7:0] : 7'h0);
     assign out[8] = clk;
 

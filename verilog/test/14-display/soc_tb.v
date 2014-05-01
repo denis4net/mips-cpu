@@ -47,30 +47,24 @@ module soc_tb();
         $dumpfile("soc_tb.vcd");
         $dumpvars(0, soc1);
 
-        $display("%8s %8s| %8s %8s| %8s %8s %8s| %8s %8s %8s %8s %8s| %8s %8s| %4s %4s",
-            "if_pc", "if_instr",
-            "id_regrs", "id_regrt",
-            "ex_alua", "ex_alub", "aluctl",
+        $display("%8s %8s %8s %8s %8s| %8s %8s| %4s %11s",
             "cpu_addr", "cpu_data", "cpu_read", "cpu_write", "cpu_ready",
             "wb_regd", "wb_regwr",
             "leds", "disp");
 
-        $monitor("%8X %8X| %8X %8X| %8X %8X %8X| %8X %8X %8X %8X %8X| %8x %8x| %4x",
-            if_pc, if_instr,
-            id_regrs, id_regrt,
-            ex_alua, ex_alub, ex_aluctl,
+        $monitor("%8X %8X %8X %8X %8X| %8x %8x| %4x %11b",
             cpu_addr, cpu_data, cpu_read, cpu_write, cpu_ready,
             wb_regdata, wb_regwrite,
             leds[6:0],
             display);
 
-        #150 $display("rg| value");
+        #50 $display("rg| value");
 
         for (i = 1; i < 32; i = i + 1)
         begin
             $display("%2d| %8x", i, soc1.cpu1.regm1.mem[i]);
         end
-
+/*
         //dumping Data memory
         $display("Data memory");
         $display("    | %8x %8x %8x %8x", 0, 4, 8, 12);
@@ -79,17 +73,27 @@ module soc_tb();
             $display("%4x| %8x %8x %8x %8x", i*4, soc1.dm1.mem[i],
                 soc1.dm1.mem[i+1], soc1.dm1.mem[i+2], soc1.dm1.mem[i+3]);
         end
-
+*/
         //dumping IO device configuration registers
-
         `ifdef LEDS
-        $display("Leds");
+        $display("Led registers");
         $display("    | %8x %8x %8x %8x", 0, 4, 8, 12);
         for(i = 0; i < 8; i = i + 4)
         begin
             $display("%4x| %8x %8x %8x %8x", i*4, soc1.iobus1.periph_leds1.registers[i],
                 soc1.iobus1.periph_leds1.registers[i+1], soc1.iobus1.periph_leds1.registers[i+2],
                 soc1.iobus1.periph_leds1.registers[i+3]);
+        end
+        `endif
+
+        `ifdef DISPLAY
+        $display("Display registers");
+        $display("    | %8x %8x %8x %8x", 0, 4, 8, 12);
+        for(i = 0; i < 8; i = i + 4)
+        begin
+            $display("%4x| %8x %8x %8x %8x", i*4, soc1.iobus1.display1.registers[i],
+                soc1.iobus1.display1.registers[i+1], soc1.iobus1.display1.registers[i+2],
+                soc1.iobus1.display1.registers[i+3]);
         end
         `endif
 
