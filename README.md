@@ -31,6 +31,15 @@ This project also includes a full set of test benches.
 These are invaluable as a quick check to verify that new changes
 have not disrupted previously working functionality.
 
+# HARDWARE
+ 
+ This project has been ported to Cyclone III Altera FPGA by Denis Vashchuk. 
+ I use Altera Quartus II 13.1 on ArchLinux. Also Instruction Set Archiecture
+ has been by some commands. Also I developed scripts that allow use MIPS 
+ regular assembler language for assembling programs for this CPU. Memory 
+ address bus has been extended to 32bit, added IO address space and
+ some peripheral devices.
+
 # REQUIREMENTS
 
 This code has been tested under Debian Linux using the
@@ -52,7 +61,7 @@ Or to run an individual test, `cd` to that specific directory
 and run `make test`.
 
     $ cd verilog/test/01-no_hazard/
-    $ make test
+    $ make
 
 ## Test Bench Design
 
